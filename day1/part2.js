@@ -1,5 +1,5 @@
 const fs = require('fs')
-const data = fs.readFileSync('./part1_input.txt').toString().split('\n').map(s => parseInt(s))
+const data = fs.readFileSync('./input.txt').toString().split('\n').map(s => parseInt(s))
 
 for (let i = 0; i < data.length - 2; i += 1) {
   for (let j = i + 1; j < data.length - 1; j += 1) {
