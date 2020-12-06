@@ -1,7 +1,6 @@
 const fs = require('fs')
 const forest = fs.readFileSync('./input.txt').toString().split('\n')
 
-console.log(forest.slice(0, 20))
 const height = forest.length
 const width = forest[0].length
 
