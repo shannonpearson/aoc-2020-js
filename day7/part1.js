@@ -1,32 +1,32 @@
 const fs = require('fs')
 const data = fs.readFileSync('./input.txt', 'utf8').split(/\n/)
 
-const bagColorDict = data.reduce((bagColorDict, line) => {
+const bagsDict = data.reduce((acc, line) => {
   let [container, ...contained] = line.replace(/ bags?/g, '').split(/ contain |, /)
-  bagColorDict[container] = bagColorDict[container] || {}
+  acc[container] = acc[container] || {}
   contained.forEach((str) => {
     const color = str.replace(/^\d{1,} ?|\./g, '')
     if (color !== 'no other') {
-      bagColorDict[container][color] = true
+      acc[container][color] = true
     }
   })
-  return bagColorDict
+  return acc
 }, {})
 
 let checkedBags = {}
-const doesBagEventuallyContainAShinyGoldBag = bagDescriptionString => {
-  if (bagColorDict[bagDescriptionString]['shiny gold']) {
+const doesBagEventuallyContainAShinyGoldBag = col => {
+  if (bagsDict[col]['shiny gold']) {
     return true
   }
-  checkedBags[bagDescriptionString] = true
-  const bagsToCheck = Object.keys(bagColorDict[bagDescriptionString]).filter(x => !checkedBags[x])
+  checkedBags[col] = true
+  const bagsToCheck = Object.keys(bagsDict[col]).filter(x => !checkedBags[x])
   if (!bagsToCheck?.length) {
     return false
   }
   return bagsToCheck.some(bag => doesBagEventuallyContainAShinyGoldBag(bag))
 }
 
-const count = Object.keys(bagColorDict).reduce((acc, color) => {
+const count = Object.keys(bagsDict).reduce((acc, color) => {
   checkedBags = {}
   if (doesBagEventuallyContainAShinyGoldBag(color)) {
     return acc + 1
