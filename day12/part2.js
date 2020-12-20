@@ -2,90 +2,44 @@ const fs = require('fs');
 const data = fs.readFileSync('./input.txt', 'utf8').split(/\n/);
 
 let shipPosition = [0, 0];
-let waypointPosition = [10, 1];
+let waypointOffset = [10, 1];
 
 const cardinals = { N: 1, S: 1, E: 1, W: 1 };
 
 const moveTowardWaypoint = count => {
-  const moveX = (waypointPosition[0] - shipPosition[0]) * count;
-  const moveY = (waypointPosition[1] - shipPosition[1]) * count;
-  [shipPosition, waypointPosition].forEach(arr => {
-    arr[0] += moveX;
-    arr[1] += moveY;
-  });
+  shipPosition[0] += waypointOffset[0] * count;
+  shipPosition[1] += waypointOffset[1] * count;
 };
 
-const moveWaypoint = (direction, count) => {
-  if (direction === 'N') {
-    return (waypointPosition[1] += count);
-  }
-  if (direction === 'S') {
-    return (waypointPosition[1] -= count);
-  }
-  if (direction === 'E') {
-    return (waypointPosition[0] += count);
-  }
-  if (direction === 'W') {
-    return (waypointPosition[0] -= count);
-  }
+const moveWaypoint = (d, count) => {
+  return eval(
+    `waypointOffset[${Number(!!{ N: 1, S: 1 }[d])}] ${
+      { N: 1, E: 1 }[d] ? '+' : '-'
+    }= ${count}`
+  );
 };
 
 const rotateWaypoint = (direction, count) => {
-  const offset = [
-    waypointPosition[0] - shipPosition[0],
-    waypointPosition[1] - shipPosition[1],
-  ];
-  if (count === 90) {
-    if (direction === 'L') {
-      waypointPosition = [
-        shipPosition[0] - offset[1],
-        shipPosition[1] + offset[0],
-      ];
-    } else {
-      waypointPosition = [
-        shipPosition[0] + offset[1],
-        shipPosition[1] - offset[0],
-      ];
-    }
-  }
+  if (direction === 'R') count = 360 - count;
   if (count === 180) {
-    waypointPosition = waypointPosition.map(
-      (_, i) => shipPosition[i] - offset[i]
-    );
+    return (waypointOffset = waypointOffset.map(n => -n));
   }
-  if (count === 270) {
-    if (direction === 'L') {
-      waypointPosition = [
-        shipPosition[0] + offset[1],
-        shipPosition[1] - offset[0],
-      ];
-    } else {
-      waypointPosition = [
-        shipPosition[0] - offset[1],
-        shipPosition[1] + offset[0],
-      ];
-    }
-  }
+  waypointOffset.reverse();
+  return (waypointOffset[Number(count === 270)] *= -1);
 };
 
 const move = command => {
-  let d = command[0];
+  const d = command[0];
   const count = Number(command.slice(1));
-  console.log(shipPosition);
-  console.log(waypointPosition);
-  console.log(command);
   if (d === 'F') {
-    moveTowardWaypoint(count);
+    return moveTowardWaypoint(count);
   }
   if (cardinals[d]) {
-    moveWaypoint(d, count);
+    return moveWaypoint(d, count);
   }
   if (d === 'R' || d === 'L') {
-    rotateWaypoint(d, count);
+    return rotateWaypoint(d, count);
   }
-  console.log(shipPosition);
-  console.log(waypointPosition);
-  console.log();
 };
 
 data.forEach(instruction => move(instruction));

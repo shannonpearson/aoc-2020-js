@@ -18,9 +18,7 @@ const DICT = {
   E: c => (coordinates[0] += c),
   R: c => (facingDirection = (facingDirection + c) % 360),
   L: c => {
-    let newDirection = facingDirection - c;
-    if (newDirection < 0) newDirection = 360 + newDirection;
-    facingDirection = newDirection;
+    facingDirection = (360 + facingDirection - c) % 360;
   },
 };
 
