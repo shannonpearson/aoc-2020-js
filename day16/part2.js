@@ -4,29 +4,25 @@ let [rules, yourTicket, nearbyTickets] = fs
   .split(/\n\n.*\n/g)
   .map(x => x.split(/\n/));
 
-const fields = [];
-const ruleRanges = rules.reduce((acc, line) => {
-  const title = line.match(/.*(?=:)/)[0];
-  fields.push(title);
-  const ranges = [...line.matchAll(/(?<start>\d+)-(?<end>\d+)/g)];
-  acc.push([
-    title,
-    ...ranges.map(range => ({
-      min: range.groups.start,
-      max: range.groups.end,
-    })),
-  ]);
-  return acc;
-}, []);
+const { fields, ruleRanges } = rules.reduce(
+  (acc, line) => {
+    acc.fields.push(line.match(/.*(?=:)/)[0]);
+    const ranges = [...line.matchAll(/(?<start>\d+)-(?<end>\d+)/g)];
+    acc.ruleRanges.push(
+      ranges.map(({ groups: { start, end } }) => ({
+        min: start,
+        max: end,
+      }))
+    );
+    return acc;
+  },
+  { fields: [], ruleRanges: [] }
+);
 
 nearbyTickets = nearbyTickets.map(l => l.split(',').map(x => Number(x)));
-const isValid = n => {
-  return ruleRanges.some(r => {
-    return r.some(s => {
-      return s.hasOwnProperty('max') ? n >= s.min && n <= s.max : false;
-    });
-  });
-};
+const isValid = n =>
+  ruleRanges.some(r => r.some(s => n >= s.min && n <= s.max));
+
 nearbyTickets = nearbyTickets.filter(
   ticketValues => !ticketValues.some(v => !isValid(v))
 );
@@ -36,17 +32,14 @@ const fieldsDict = fields.reduce(
   {}
 );
 
-const possibilities = new Array(fields.length);
-for (let i = 0; i < possibilities.length; i++) {
-  possibilities[i] = { ...fieldsDict };
-}
+const possibilities = fields.map(_ => ({ ...fieldsDict }));
 
 nearbyTickets.forEach((ticketValues, k) => {
   ticketValues.forEach((v, i) => {
-    ruleRanges.forEach(([title, ...ranges], j) => {
+    ruleRanges.forEach((ranges, j) => {
       const valueIsValid = ranges.some(({ min, max }) => v >= min && v <= max);
       if (!valueIsValid) {
-        possibilities[i][title] = false;
+        possibilities[i][fields[j]] = false;
       }
     });
   });
@@ -75,4 +68,4 @@ const departureValues = yourTicket.reduce(
   1
 );
 
-console.log(departureValues === 855275529001);
+console.log(departureValues, departureValues === 855275529001);
